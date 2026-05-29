@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construye tu primer modelo de IA — Guía paso a paso</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;1,300&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;
+  --surface:#0e1526;
+  --card:#121d31;
+  --border:#1e2f4a;
+  --accent:#38bdf8;
+  --accent2:#fb923c;
+  --accent3:#a78bfa;
+  --green:#34d399;
+  --red:#f87171;
+  --yellow:#fbbf24;
+  --pink:#f472b6;
+  --muted:#4a6280;
+  --muted2:#2d4159;
+  --text:#cfe0f5;
+  --text2:#7a9fc2;
+  --white:#ffffff;
+  --mono:'JetBrains Mono',monospace;
+  --display:'Syne',sans-serif;
+  --sans:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+
+/* ══════════════════════════════════════════════
+   LAYOUT SHELL
+══════════════════════════════════════════════ */
+.sidebar{
+  position:fixed;
+  left:0;top:0;bottom:0;
+  width:220px;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+  padding:20px 0;
+  overflow-y:auto;
+}
+.main{
+  margin-left:220px;
+  min-height:100vh;
+}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR NAVIGATION
+══════════════════════════════════════════════ */
+.sidebar-logo{
+  padding:0 20px 18px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.sidebar-logo .logo-tag{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:5px;
+}
+.sidebar-logo .logo-title{
+  font-family:var(--display);
+  font-size:13px;
+  font-weight:700;
+  color:var(--white);
+  line-height:1.3;
+}
+.nav-section{
+  padding:0 12px;
+  margin-bottom:6px;
+}
+.nav-section-label{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:0 8px;
+  margin-bottom:4px;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:7px;
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .15s;
+  margin-bottom:2px;
+}
+.nav-item:hover{background:var(--card)}
+.nav-item.active{background:rgba(56,189,248,.1);border-left:2px solid var(--accent)}
+.nav-num{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  color:var(--muted);
+  min-width:18px;
+}
+.nav-item.active .nav-num{color:var(--accent)}
+.nav-text{
+  font-size:12px;
+  color:var(--text2);
+  line-height:1.3;
+}
+.nav-item.active .nav-text{color:var(--text)}
+.nav-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--muted2);
+  flex-shrink:0;
+  margin-left:auto;
+}
+.nav-item.active .nav-dot{background:var(--accent)}
+
+/* ══════════════════════════════════════════════
+   SECTION BASE
+══════════════════════════════════════════════ */
+.sec{
+  min-height:100vh;
+  padding:60px 56px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.sec::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 50% 35% at 90% 10%,rgba(56,189,248,.03) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+/* ══════════════════════════════════════════════
+   PROGRESS BAR
+══════════════════════════════════════════════ */
+#prog{
+  position:fixed;top:0;left:220px;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent3));
+  z-index:200;
+  transition:width .2s;
+}
+
+/* ══════════════════════════════════════════════
+   TYPOGRAPHY
+══════════════════════════════════════════════ */
+.eyebrow{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--accent);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.h1{
+  font-family:var(--display);
+  font-size:clamp(36px,4.5vw,58px);
+  font-weight:800;
+  color:var(--white);
+  line-height:1.07;
+  margin-bottom:16px;
+}
+.h1 .hl{color:var(--accent)}
+.h1 .hl2{color:var(--accent2)}
+.h1 .hl3{color:var(--accent3)}
+.h2{
+  font-family:var(--display);
+  font-size:clamp(20px,2.8vw,30px);
+  font-weight:700;
+  color:var(--white);
+  margin-bottom:8px;
+}
+.lead{
+  font-size:15px;
+  color:var(--text2);
+  max-width:680px;
+  line-height:1.7;
+  margin-bottom:28px;
+}
+.rule{
+  width:48px;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent3));
+  border-radius:2px;
+  margin-bottom:24px;
+}
+
+/* ══════════════════════════════════════════════
+   STEP HEADER (numbered)
+══════════════════════════════════════════════ */
+.step-header{
+  display:flex;
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:24px;
+}
+.step-badge{
+  background:var(--accent);
+  color:var(--bg);
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:8px;
+  flex-shrink:0;
+  letter-spacing:1px;
+  margin-top:4px;
+}
+.step-badge.s2{background:var(--accent2);color:var(--bg)}
+.step-badge.s3{background:var(--accent3);color:var(--bg)}
+.step-badge.s4{background:var(--green);color:var(--bg)}
+.step-badge.s5{background:var(--yellow);color:var(--bg)}
+.step-badge.s6{background:var(--pink);color:var(--bg)}
+.step-badge.s7{background:var(--red);color:var(--bg)}
+.step-info h2{
+  font-family:var(--display);
+  font-size:clamp(18px,2.5vw,26px);
+  font-weight:700;
+  color:var(--white);
+  margin-bottom:4px;
+}
+.step-info p{font-size:14px;color:var(--text2);max-width:620px;line-height:1.6}
+
+/* ══════════════════════════════════════════════
+   CODE BLOCKS
+══════════════════════════════════════════════ */
+.code-wrap{
+  background:#040911;
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  margin:16px 0;
+  position:relative;
+}
+.code-topbar{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:10px 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.code-dots{display:flex;gap:6px}
+.code-dots span{
+  width:11px;height:11px;
+  border-radius:50%;
+}
+.dot-r{background:#f87171}
+.dot-y{background:#fbbf24}
+.dot-g{background:#34d399}
+.code-filename{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:.5px;
+  margin-left:4px;
+}
+.code-body{
+  padding:20px 24px;
+  font-family:var(--mono);
+  font-size:12.5px;
+  line-height:1.9;
+  overflow-x:auto;
+  color:#c9d8ee;
+}
+/* syntax */
+.kw{color:#c084fc}
+.fn{color:#60a5fa}
+.st{color:#86efac}
+.nm{color:#fb923c}
+.cm{color:#344d68;font-style:italic}
+.op{color:#38bdf8}
+.vr{color:#e2e8f0}
+.cl{color:#f9a8d4}
+.out{color:#34d399}
+.err{color:#f87171}
+.hi{background:rgba(56,189,248,.08);border-left:2px solid var(--accent);display:block;margin-left:-24px;padding-left:22px;padding-right:8px}
+.hi2{background:rgba(251,146,60,.07);border-left:2px solid var(--accent2);display:block;margin-left:-24px;padding-left:22px;padding-right:8px}
+.hi3{background:rgba(167,139,250,.07);border-left:2px solid var(--accent3);display:block;margin-left:-24px;padding-left:22px;padding-right:8px}
+
+/* annotations */
+.annotation{
+  display:flex;
+  gap:10px;
+  background:rgba(56,189,248,.06);
+  border:1px solid rgba(56,189,248,.18);
+  border-radius:8px;
+  padding:12px 16px;
+  margin:8px 0;
+  font-size:13px;
+  align-items:flex-start;
+}
+.annotation.warn{
+  background:rgba(251,146,60,.06);
+  border-color:rgba(251,146,60,.2);
+}
+.annotation.ok{
+  background:rgba(52,211,153,.06);
+  border-color:rgba(52,211,153,.2);
+}
+.annotation.info2{
+  background:rgba(167,139,250,.06);
+  border-color:rgba(167,139,250,.2);
+}
+.ann-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.ann-text{color:var(--text);line-height:1.5}
+.ann-text strong{color:var(--white)}
+
+/* ══════════════════════════════════════════════
+   CONCEPT CARDS
+══════════════════════════════════════════════ */
+.cards{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px 20px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:3px;
+  border-radius:10px 10px 0 0;
+}
+.ca::before{background:var(--accent)}
+.cb::before{background:var(--accent2)}
+.cc::before{background:var(--accent3)}
+.cd::before{background:var(--green)}
+.ce::before{background:var(--red)}
+.cf::before{background:var(--yellow)}
+.cg::before{background:var(--pink)}
+
+.card-tag{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.ca .card-tag{color:var(--accent)}
+.cb .card-tag{color:var(--accent2)}
+.cc .card-tag{color:var(--accent3)}
+.cd .card-tag{color:var(--green)}
+.ce .card-tag{color:var(--red)}
+.cf .card-tag{color:var(--yellow)}
+.cg .card-tag{color:var(--pink)}
+
+.card-title{
+  font-size:14px;
+  font-weight:500;
+  color:var(--white);
+  margin-bottom:6px;
+}
+.card-body{font-size:12.5px;color:var(--text2);line-height:1.6}
+.card-code{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--accent);
+  background:rgba(0,0,0,.35);
+  border-radius:5px;
+  padding:6px 10px;
+  margin-top:8px;
+  border-left:2px solid var(--accent);
+}
+.ca .card-code{color:var(--accent);border-left-color:var(--accent)}
+.cb .card-code{color:var(--accent2);border-left-color:var(--accent2)}
+.cc .card-code{color:var(--accent3);border-left-color:var(--accent3)}
+.cd .card-code{color:var(--green);border-left-color:var(--green)}
+.ce .card-code{color:var(--red);border-left-color:var(--red)}
+.cf .card-code{color:var(--yellow);border-left-color:var(--yellow)}
+.cg .card-code{color:var(--pink);border-left-color:var(--pink)}
+
+/* ══════════════════════════════════════════════
+   ANALOGY
+══════════════════════════════════════════════ */
+.analogy{
+  display:grid;
+  grid-template-columns:1fr 40px 1fr;
+  gap:14px;
+  align-items:center;
+  margin:20px 0;
+}
+.aside{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+  text-align:center;
+}
+.aside .em{font-size:32px;margin-bottom:8px}
+.aside .albl{
+  font-family:var(--mono);
+  font-size:9px;color:var(--muted);
+  letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.aside .aname{font-size:15px;font-weight:600;color:var(--white);margin-bottom:6px}
+.aside .adesc{font-size:12px;color:var(--text2);line-height:1.5}
+.arrow{font-size:20px;color:var(--accent);text-align:center}
+
+/* ══════════════════════════════════════════════
+   PARAM TABLE
+══════════════════════════════════════════════ */
+.ptable{
+  width:100%;border-collapse:collapse;
+  font-size:13px;margin:16px 0;
+}
+.ptable thead tr{
+  background:rgba(56,189,248,.06);
+}
+.ptable th{
+  border:1px solid var(--border);
+  padding:10px 14px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--accent);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-align:left;
+}
+.ptable td{
+  border:1px solid var(--border);
+  padding:10px 14px;
+  color:var(--text);
+  vertical-align:top;
+}
+.ptable tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+.ptable tr:hover td{background:rgba(56,189,248,.03)}
+.pn{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  color:var(--accent);
+}
+.tag{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+}
+.tg{background:rgba(52,211,153,.12);color:var(--green)}
+.tr{background:rgba(248,113,113,.12);color:var(--red)}
+.ty{background:rgba(251,191,36,.1);color:var(--yellow)}
+.tb{background:rgba(56,189,248,.1);color:var(--accent)}
+
+/* ══════════════════════════════════════════════
+   CONFUSION MATRIX
+══════════════════════════════════════════════ */
+.cmgrid{
+  display:grid;
+  grid-template-columns:auto 1fr 1fr;
+  gap:3px;
+  max-width:400px;
+  margin:16px 0;
+}
+.cmh{
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-family:var(--mono);
+  font-size:10px;letter-spacing:1px;padding:8px;
+}
+.cmcell{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:14px;border-radius:6px;
+  font-family:var(--mono);font-size:16px;font-weight:600;
+  text-align:center;
+}
+.cmcell sub{font-size:10px;font-weight:400;margin-top:3px;color:inherit;opacity:.75}
+.tp,.tn{background:rgba(52,211,153,.16);color:var(--green)}
+.fp,.fn{background:rgba(248,113,113,.16);color:var(--red)}
+.fn{background:rgba(248,113,113,.24)}
+
+/* ══════════════════════════════════════════════
+   COVER META
+══════════════════════════════════════════════ */
+.cover-meta{display:flex;gap:28px;flex-wrap:wrap;margin-top:28px}
+.cm-item .cml{
+  font-family:var(--mono);font-size:9px;
+  color:var(--muted);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:3px;
+}
+.cm-item .cmv{font-size:14px;font-weight:500;color:var(--text)}
+
+/* ══════════════════════════════════════════════
+   STORY BOX
+══════════════════════════════════════════════ */
+.story{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:28px 32px;
+  max-width:760px;
+  position:relative;
+}
+.story::before{
+  content:'"';
+  font-family:var(--display);
+  font-size:80px;
+  color:var(--accent);
+  opacity:.15;
+  position:absolute;
+  top:10px;left:20px;
+  line-height:1;
+  pointer-events:none;
+}
+.story-text{
+  font-size:15px;
+  color:var(--text);
+  line-height:1.75;
+  padding-left:30px;
+}
+.story-text em{color:var(--accent);font-style:normal;font-weight:500}
+.story-text strong{color:var(--white)}
+.story-source{
+  font-family:var(--mono);font-size:11px;
+  color:var(--muted);margin-top:14px;
+  padding-left:30px;
+}
+
+/* ══════════════════════════════════════════════
+   INLINE TERMINAL
+══════════════════════════════════════════════ */
+.term{
+  background:#020709;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px 20px;
+  font-family:var(--mono);
+  font-size:12.5px;
+  margin:12px 0;
+}
+.term .p{color:var(--muted)}
+.term .c{color:var(--text)}
+.term .ok{color:var(--green)}
+.term .er{color:var(--red)}
+
+/* ══════════════════════════════════════════════
+   COMPARISON
+══════════════════════════════════════════════ */
+.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:16px 0;
+}
+
+/* ══════════════════════════════════════════════
+   PILL BADGE
+══════════════════════════════════════════════ */
+.pill{
+  display:inline-block;
+  padding:3px 12px;
+  border-radius:20px;
+  font-family:var(--mono);
+  font-size:10px;
+  margin:2px;
+}
+.p-blue{background:rgba(56,189,248,.12);color:var(--accent)}
+.p-green{background:rgba(52,211,153,.12);color:var(--green)}
+.p-orange{background:rgba(251,146,60,.12);color:var(--accent2)}
+.p-purple{background:rgba(167,139,250,.12);color:var(--accent3)}
+.p-red{background:rgba(248,113,113,.12);color:var(--red)}
+
+/* ══════════════════════════════════════════════
+   DIVIDER
+══════════════════════════════════════════════ */
+.hline{
+  height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  margin:24px 0;opacity:.2;
+}
+
+/* ══════════════════════════════════════════════
+   CHALLENGE BOX
+══════════════════════════════════════════════ */
+.challenge{
+  background:rgba(167,139,250,.06);
+  border:1px solid rgba(167,139,250,.22);
+  border-radius:12px;
+  padding:24px 28px;
+  margin:20px 0;
+}
+.challenge h3{
+  font-family:var(--display);
+  font-size:18px;font-weight:700;
+  color:var(--accent3);margin-bottom:10px;
+}
+.challenge p{font-size:13.5px;color:var(--text2);margin-bottom:8px;line-height:1.6}
+.challenge ul{
+  padding-left:18px;color:var(--text);
+  font-size:13px;display:flex;flex-direction:column;gap:7px;
+}
+.challenge ul li::marker{color:var(--accent3)}
+
+/* ══════════════════════════════════════════════
+   FLOW CHART
+══════════════════════════════════════════════ */
+.flow{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin:16px 0;
+}
+.flow-box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:12px;
+  color:var(--text);
+  text-align:center;
+  min-width:90px;
+}
+.flow-box.active{
+  border-color:var(--accent);
+  background:rgba(56,189,248,.07);
+  color:var(--accent);
+  font-weight:500;
+}
+.flow-arrow{color:var(--muted);font-size:14px}
+
+/* ══════════════════════════════════════════════
+   SCROLL HELPERS
+══════════════════════════════════════════════ */
+.mt16{margin-top:16px}
+.mt24{margin-top:24px}
+.mb16{margin-bottom:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* ══════════════════════════════════════════════
+   PRINT
+══════════════════════════════════════════════ */
+@media print{
+  .sidebar{display:none}
+  .main{margin-left:0}
+  #prog{display:none}
+  .sec{min-height:auto;padding:32px 28px}
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .sec{padding:36px 22px}
+  .g2,.g3,.g4,.compare,.two,.analogy{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<!-- ════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════ -->
+<nav class="sidebar" aria-label="Navegación de la guía">
+  <div class="sidebar-logo">
+    <div class="logo-tag">Módulo III · S2</div>
+    <div class="logo-title">Construye tu primer modelo de IA</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Introducción</div>
+    <a href="#s-cover"  class="nav-item active"><span class="nav-num">00</span><span class="nav-text">Portada y contexto</span><span class="nav-dot"></span></a>
+    <a href="#s-story"  class="nav-item"><span class="nav-num">01</span><span class="nav-text">La historia</span><span class="nav-dot"></span></a>
+    <a href="#s-theory" class="nav-item"><span class="nav-num">02</span><span class="nav-text">Conceptos clave</span><span class="nav-dot"></span></a>
+    <a href="#s-setup"  class="nav-item"><span class="nav-num">03</span><span class="nav-text">Preparar IDLE</span><span class="nav-dot"></span></a>
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">
+    <div class="nav-section-label">Código paso a paso</div>
+    <a href="#s-p1" class="nav-item"><span class="nav-num">P1</span><span class="nav-text">Importar librerías</span><span class="nav-dot"></span></a>
+    <a href="#s-p2" class="nav-item"><span class="nav-num">P2</span><span class="nav-text">Cargar datos</span><span class="nav-dot"></span></a>
+    <a href="#s-p3" class="nav-item"><span class="nav-num">P3</span><span class="nav-text">Dividir dataset</span><span class="nav-dot"></span></a>
+    <a href="#s-p4" class="nav-item"><span class="nav-num">P4</span><span class="nav-text">Crear el modelo</span><span class="nav-dot"></span></a>
+    <a href="#s-p5" class="nav-item"><span class="nav-num">P5</span><span class="nav-text">Entrenar</span><span class="nav-dot"></span></a>
+    <a href="#s-p6" class="nav-item"><span class="nav-num">P6</span><span class="nav-text">Predecir y medir</span><span class="nav-dot"></span></a>
+    <a href="#s-p7" class="nav-item"><span class="nav-num">P7</span><span class="nav-text">Matriz visual</span><span class="nav-dot"></span></a>
+    <a href="#s-p8" class="nav-item"><span class="nav-num">P8</span><span class="nav-text">Comparar configs</span><span class="nav-dot"></span></a>
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">
+    <div class="nav-section-label">Cierre</div>
+    <a href="#s-reto"  class="nav-item"><span class="nav-num">★</span><span class="nav-text">Tu reto</span><span class="nav-dot"></span></a>
+    <a href="#s-final" class="nav-item"><span class="nav-num">FIN</span><span class="nav-text">Entregable</span><span class="nav-dot"></span></a>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════ -->
+<main class="main">
+
+<!-- ─────────────────────────────────────────────
+     00  PORTADA
+───────────────────────────────────────────── -->
+<section class="sec" id="s-cover">
+  <p class="eyebrow">Módulo III · Submódulo 2 · Técnico en Inteligencia Artificial</p>
+  <div class="rule"></div>
+  <h1 class="h1">Construye tu<br><span class="hl">primer modelo</span><br>de IA desde cero</h1>
+  <p class="lead">En esta actividad vas a escribir código real en Python IDLE, paso a paso, hasta tener un clasificador funcional con parámetros e hiperparámetros que tú mismo puedes ajustar.</p>
+
+  <div class="cover-meta">
+    <div class="cm-item">
+      <div class="cml">Herramienta</div>
+      <div class="cmv">Python IDLE</div>
+    </div>
+    <div class="cm-item">
+      <div class="cml">Duración</div>
+      <div class="cmv">3 horas de laboratorio</div>
+    </div>
+    <div class="cm-item">
+      <div class="cml">Dataset</div>
+      <div class="cmv">Breast Cancer Wisconsin (real)</div>
+    </div>
+    <div class="cm-item">
+      <div class="cml">Entregable</div>
+      <div class="cmv">1 archivo .py funcionando</div>
+    </div>
+    <div class="cm-item">
+      <div class="cml">Nivel</div>
+      <div class="cmv">Intermedio</div>
+    </div>
+  </div>
+
+  <div class="hline" style="margin-top:36px"></div>
+
+  <div class="flow">
+    <div class="flow-box active">Contexto</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Teoría</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Setup</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">8 pasos de código</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Tu reto</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Entrega</div>
+  </div>
+
+  <div class="annotation mt24" style="max-width:640px">
+    <span class="ann-icon">📌</span>
+    <div class="ann-text">Esta guía es tu <strong>hoja de ruta</strong>. Cada sección tiene el código completo listo para copiar y ejecutar con <strong>F5</strong> en IDLE. No saltes pasos — cada uno construye sobre el anterior.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     01  LA HISTORIA
+───────────────────────────────────────────── -->
+<section class="sec" id="s-story">
+  <p class="eyebrow">// 01 · contexto</p>
+  <h2 class="h2">¿Por qué vamos a hacer esto?</h2>
+  <p class="lead">Antes de escribir código, necesitas entender el problema real que vas a resolver.</p>
+
+  <div class="story">
+    <p class="story-text">
+      El año es <em>1994</em>. En la Universidad de Wisconsin, la doctora <strong>Olvi Mangasarian</strong> y su equipo tienen un problema: los médicos tardan días en analizar una biopsia de tumor de mama. A veces se equivocan. A veces llegan tarde.<br><br>
+      Tienen datos de <em>569 biopsias</em> reales — 30 mediciones de cada tumor: radio, textura, perímetro, área, suavidad... Cada una está etiquetada como <strong>maligna</strong> (cancerosa) o <strong>benigna</strong> (no cancerosa).<br><br>
+      La pregunta es: <em>¿puede una computadora aprender a distinguirlas automáticamente?</em><br><br>
+      Hoy tú vas a ser el científico de datos. Vas a construir ese modelo. Y al final, verás cuántos tumores acierta y cuántos falla.
+    </p>
+    <p class="story-source">→ Dataset real: Breast Cancer Wisconsin · UCI Machine Learning Repository · 1994</p>
+  </div>
+
+  <div class="mt24 cards g3">
+    <div class="card ca">
+      <div class="card-tag">El objetivo</div>
+      <div class="card-title">Clasificar tumores</div>
+      <div class="card-body">Dado un conjunto de mediciones de un tumor, predecir si es maligno (0) o benigno (1).</div>
+    </div>
+    <div class="card cb">
+      <div class="card-tag">Lo que tenemos</div>
+      <div class="card-title">569 muestras reales</div>
+      <div class="card-body">30 características numéricas por muestra. 212 malignos y 357 benignos. Ya vienen en sklearn.</div>
+    </div>
+    <div class="card cc">
+      <div class="card-tag">El algoritmo</div>
+      <div class="card-title">Random Forest</div>
+      <div class="card-body">Un "bosque" de árboles de decisión que votan juntos. Robusto, interpretable y perfecto para aprender hiperparámetros.</div>
+    </div>
+  </div>
+
+  <div class="annotation mt24 warn">
+    <span class="ann-icon">⚠️</span>
+    <div class="ann-text"><strong>Importante:</strong> En este problema un <strong>Falso Negativo</strong> (decirle a un paciente que su tumor es benigno cuando es maligno) es mucho más grave que un Falso Positivo. Esto va a influir en qué métricas debemos priorizar.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     02  CONCEPTOS CLAVE
+───────────────────────────────────────────── -->
+<section class="sec" id="s-theory">
+  <p class="eyebrow">// 02 · teoría esencial</p>
+  <h2 class="h2">Tres conceptos que necesitas ahora mismo</h2>
+  <p class="lead">Antes del código, estos conceptos van a aparecer en cada paso. Léelos con calma.</p>
+
+  <div class="analogy">
+    <div class="aside">
+      <div class="em">🧠</div>
+      <div class="albl">Parámetros</div>
+      <div class="aname">Los aprende el modelo solo</div>
+      <div class="adesc">Pesos internos, umbrales de decisión — el modelo los ajusta durante el entrenamiento automáticamente.</div>
+      <div class="card-code" style="margin-top:12px">modelo.estimators_[0].tree_</div>
+    </div>
+    <div class="arrow">≠</div>
+    <div class="aside">
+      <div class="em">⚙️</div>
+      <div class="albl">Hiperparámetros</div>
+      <div class="aname">Tú los configuras antes</div>
+      <div class="adesc">n_estimators, max_depth, min_samples_leaf — los defines tú antes de entrenar. Son las "perillas" del modelo.</div>
+      <div class="card-code" style="margin-top:12px">RandomForestClassifier(n_estimators=100)</div>
+    </div>
+  </div>
+
+  <div class="hline"></div>
+
+  <h2 class="h2" style="margin-bottom:12px">Las 4 métricas que vas a calcular</h2>
+
+  <div class="cards g2 mt16">
+    <div class="card ca">
+      <div class="card-tag">Accuracy — Exactitud</div>
+      <div class="card-title">¿Cuántos acerté en total?</div>
+      <div class="card-body">La más simple. Cuidado: con datos desbalanceados puede mentir.</div>
+      <div class="card-code">(TP + TN) / (TP + TN + FP + FN)</div>
+    </div>
+    <div class="card cb">
+      <div class="card-tag">Precision — Precisión</div>
+      <div class="card-title">De los que dije positivo, ¿cuántos lo eran?</div>
+      <div class="card-body">Importante cuando los Falsos Positivos son costosos.</div>
+      <div class="card-code">TP / (TP + FP)</div>
+    </div>
+    <div class="card ce">
+      <div class="card-tag">Recall — Sensibilidad</div>
+      <div class="card-title">De todos los positivos reales, ¿cuántos encontré?</div>
+      <div class="card-body">Crítico aquí: no queremos perder tumores malignos (FN).</div>
+      <div class="card-code">TP / (TP + FN)</div>
+    </div>
+    <div class="card cc">
+      <div class="card-tag">F1-Score</div>
+      <div class="card-title">Media armónica de Precision y Recall</div>
+      <div class="card-body">El mejor indicador único. Penaliza cuando uno de los dos es bajo.</div>
+      <div class="card-code">2 × (P × R) / (P + R)</div>
+    </div>
+  </div>
+
+  <div class="hline"></div>
+
+  <h2 class="h2" style="margin-bottom:12px">Matriz de confusión — visualizar los errores</h2>
+  <div class="two">
+    <div>
+      <div class="cmgrid">
+        <div class="cmh"></div>
+        <div class="cmh">Pred: Positivo</div>
+        <div class="cmh">Pred: Negativo</div>
+        <div class="cmh" style="writing-mode:vertical-rl;font-size:10px">Real: Pos</div>
+        <div class="cmcell tp">TP ✓<sub>Verdadero Positivo</sub></div>
+        <div class="cmcell fn">FN ✗<sub>Falso Negativo 🔴</sub></div>
+        <div class="cmh" style="writing-mode:vertical-rl;font-size:10px">Real: Neg</div>
+        <div class="cmcell fp">FP ✗<sub>Falso Positivo</sub></div>
+        <div class="cmcell tn">TN ✓<sub>Verdadero Negativo</sub></div>
+      </div>
+    </div>
+    <div>
+      <div class="cards" style="gap:10px">
+        <div class="card cd" style="padding:14px">
+          <div class="card-tag">TP y TN</div>
+          <div class="card-body">Aciertos. El modelo predijo bien. Más de estos = mejor.</div>
+        </div>
+        <div class="card ce" style="padding:14px">
+          <div class="card-tag">FN — El más peligroso aquí</div>
+          <div class="card-body">Dijo "benigno" pero era maligno. En cáncer esto puede costar una vida. Queremos minimizar los FN.</div>
+        </div>
+        <div class="card cf" style="padding:14px">
+          <div class="card-tag">FP</div>
+          <div class="card-body">Dijo "maligno" pero era benigno. Genera ansiedad innecesaria pero es menos grave que FN.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     03  SETUP
+───────────────────────────────────────────── -->
+<section class="sec" id="s-setup">
+  <p class="eyebrow">// 03 · preparar el entorno</p>
+  <div class="step-header">
+    <div class="step-badge">SETUP</div>
+    <div class="step-info">
+      <h2>Configura Python IDLE antes de empezar</h2>
+      <p>Haz esto una sola vez. Después todo el código se ejecuta con F5.</p>
+    </div>
+  </div>
+
+  <p style="color:var(--text2);font-size:14px;margin-bottom:12px"><strong style="color:var(--white)">Paso A —</strong> Abre la Terminal de tu computadora (no IDLE, sino la terminal del sistema).</p>
+  <div class="term">
+    <div><span class="p">windows → </span><span class="c">Inicio → buscar "cmd" → Enter</span></div>
+    <div><span class="p">mac     → </span><span class="c">Cmd + Espacio → "terminal" → Enter</span></div>
+  </div>
+
+  <p style="color:var(--text2);font-size:14px;margin:16px 0 8px"><strong style="color:var(--white)">Paso B —</strong> Instala las librerías necesarias (copia y pega exactamente):</p>
+  <div class="term">
+    <div><span class="p">$ </span><span class="c">pip install scikit-learn matplotlib numpy</span></div>
+  </div>
+
+  <p style="color:var(--text2);font-size:14px;margin:16px 0 8px"><strong style="color:var(--white)">Paso C —</strong> Verifica que todo instaló bien:</p>
+  <div class="term">
+    <div><span class="p">$ </span><span class="c">python -c "import sklearn, matplotlib, numpy; print('TODO OK')"</span></div>
+    <div><span class="ok">TODO OK</span></div>
+  </div>
+
+  <p style="color:var(--text2);font-size:14px;margin:16px 0 8px"><strong style="color:var(--white)">Paso D —</strong> Abre IDLE y crea un archivo nuevo:</p>
+  <div class="term">
+    <div><span class="c">IDLE → File → New File → guarda como <span class="ok">mi_modelo.py</span></span></div>
+  </div>
+
+  <div class="annotation ok mt16">
+    <span class="ann-icon">✅</span>
+    <div class="ann-text"><strong>Para ejecutar en IDLE:</strong> abre el archivo .py → presiona <strong>F5</strong> (o Run → Run Module). La salida aparece en la ventana azul llamada "IDLE Shell".</div>
+  </div>
+
+  <div class="annotation warn mt16">
+    <span class="ann-icon">⚠️</span>
+    <div class="ann-text"><strong>Importante para las gráficas:</strong> El código ya incluye <strong style="color:var(--accent2)">matplotlib.use("TkAgg")</strong> en la línea correcta. Si no aparece la gráfica, verifica que esa línea esté antes de cualquier import de pyplot.</div>
+  </div>
+
+  <div class="cards g3 mt24">
+    <div class="card ca" style="padding:14px">
+      <div class="card-tag">F5</div>
+      <div class="card-body">Ejecutar el programa completo desde IDLE</div>
+    </div>
+    <div class="card cb" style="padding:14px">
+      <div class="card-tag">Ctrl + Z</div>
+      <div class="card-body">Deshacer el último cambio en el editor</div>
+    </div>
+    <div class="card cc" style="padding:14px">
+      <div class="card-tag">Ctrl + F</div>
+      <div class="card-body">Buscar texto dentro del archivo</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P1  IMPORTAR LIBRERÍAS
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p1">
+  <p class="eyebrow">// paso 1 de 8</p>
+  <div class="step-header">
+    <div class="step-badge">PASO 1</div>
+    <div class="step-info">
+      <h2>Importar las librerías</h2>
+      <p>Las librerías son "cajas de herramientas" que ya tienen todo construido. Solo hay que pedirlas prestadas.</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — líneas 1 a 20</div>
+    </div>
+    <div class="code-body">
+<span class="cm">"""</span>
+<span class="cm">  ╔══════════════════════════════════════════════════════╗</span>
+<span class="cm">  ║  Mi Primer Modelo de Inteligencia Artificial         ║</span>
+<span class="cm">  ║  Módulo III · Submódulo 2                            ║</span>
+<span class="cm">  ║  Alumno: _______________________                     ║</span>
+<span class="cm">  ╚══════════════════════════════════════════════════════╝</span>
+<span class="cm">  INSTRUCCIÓN: guarda este archivo y presiona F5 para ejecutar</span>
+<span class="cm">"""</span>
+
+<span class="cm"># ── LIBRERÍAS EXTERNAS ──────────────────────────────────────────────</span>
+<span class="hi"><span class="kw">import</span> warnings                          <span class="cm"># silencia avisos innecesarios</span></span>
+warnings.<span class="fn">filterwarnings</span>(<span class="st">"ignore"</span>)
+
+<span class="cm"># matplotlib necesita esta línea ANTES de cualquier import de pyplot</span>
+<span class="cm"># para que IDLE pueda abrir ventanas de gráficas</span>
+<span class="hi2"><span class="kw">import</span> matplotlib
+matplotlib.<span class="fn">use</span>(<span class="st">"TkAgg"</span>)                  <span class="cm"># ← obligatorio para IDLE</span></span>
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># ── HERRAMIENTAS DE SCIKIT-LEARN ────────────────────────────────────</span>
+<span class="hi3"><span class="kw">from</span> sklearn.datasets        <span class="kw">import</span> <span class="fn">load_breast_cancer</span>   <span class="cm"># el dataset</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">train_test_split</span>      <span class="cm"># dividir datos</span>
+<span class="kw">from</span> sklearn.ensemble        <span class="kw">import</span> <span class="fn">RandomForestClassifier</span> <span class="cm"># el modelo</span>
+<span class="kw">from</span> sklearn.metrics         <span class="kw">import</span> (
+    <span class="fn">accuracy_score</span>,    <span class="cm"># % de aciertos totales</span>
+    <span class="fn">precision_score</span>,   <span class="cm"># de lo que predije +, ¿cuánto era +?</span>
+    <span class="fn">recall_score</span>,      <span class="cm"># de todos los + reales, ¿cuántos encontré?</span>
+    <span class="fn">f1_score</span>,          <span class="cm"># media armónica de precision y recall</span>
+    <span class="fn">confusion_matrix</span>,  <span class="cm"># tabla TP/TN/FP/FN</span>
+    <span class="fn">classification_report</span>  <span class="cm"># reporte completo</span>
+)</span>
+
+<span class="fn">print</span>(<span class="st">"✅ Paso 1 completado — librerías cargadas correctamente"</span>)
+    </div>
+  </div>
+
+  <div class="cards g3 mt16">
+    <div class="card ca" style="padding:14px">
+      <div class="card-tag">scikit-learn</div>
+      <div class="card-body">Contiene el modelo, las métricas y el dataset. Es la librería de ML más usada en el mundo.</div>
+    </div>
+    <div class="card cb" style="padding:14px">
+      <div class="card-tag">matplotlib</div>
+      <div class="card-body">Para visualizar gráficas. <strong style="color:var(--white)">TkAgg</strong> es el motor de ventanas compatible con IDLE.</div>
+    </div>
+    <div class="card cc" style="padding:14px">
+      <div class="card-tag">numpy</div>
+      <div class="card-body">Cálculo matemático con vectores y matrices. sklearn lo usa internamente.</div>
+    </div>
+  </div>
+
+  <div class="annotation mt16">
+    <span class="ann-icon">💡</span>
+    <div class="ann-text">Las líneas resaltadas en <strong style="color:var(--accent)">azul</strong> son las más importantes de cada paso. En el resto del código seguirás viendo ese sistema de colores.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P2  CARGAR DATOS
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p2">
+  <p class="eyebrow">// paso 2 de 8</p>
+  <div class="step-header">
+    <div class="step-badge">PASO 2</div>
+    <div class="step-info">
+      <h2>Cargar y explorar el dataset</h2>
+      <p>Conoce los datos antes de entrenar. Un científico de datos nunca salta este paso.</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 1</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 2: CARGAR EL DATASET ───────────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  load_breast_cancer() descarga el dataset desde sklearn (viene incluido)</span>
+<span class="cm">#  No necesitas conexión a internet</span>
+
+<span class="hi">data = <span class="fn">load_breast_cancer</span>()   <span class="cm"># objeto con todo el dataset</span></span>
+
+<span class="cm"># Extraer X (características) e y (etiquetas)</span>
+<span class="vr">X</span> = data.data       <span class="cm"># matriz de 569 × 30 — cada fila es un tumor</span>
+<span class="vr">y</span> = data.target     <span class="cm"># vector de 569 — 0=maligno, 1=benigno</span>
+
+<span class="cm"># ── EXPLORAR: ¿qué contiene el dataset? ────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">"  DATASET: Breast Cancer Wisconsin"</span>)
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">f"  Total de muestras   : {<span class="vr">X</span>.shape[0]}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Características/muestra: {<span class="vr">X</span>.shape[1]}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Nombres de clases   : {list(data.target_names)}"</span>)
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">f"  Tumores MALIGNOS    : {sum(<span class="vr">y</span>==0)}  (clase 0)"</span>)
+<span class="fn">print</span>(<span class="st">f"  Tumores BENIGNOS    : {sum(<span class="vr">y</span>==1)}  (clase 1)"</span>)
+<span class="fn">print</span>()
+
+<span class="cm"># Ver los nombres de las 30 características</span>
+<span class="fn">print</span>(<span class="st">"  Las 30 características medidas en cada tumor:"</span>)
+<span class="kw">for</span> i, nombre <span class="kw">in</span> <span class="fn">enumerate</span>(data.feature_names):
+    <span class="fn">print</span>(<span class="st">f"    {i+1:>2}. {nombre}"</span>)
+
+<span class="fn">print</span>()
+<span class="cm"># Ver los valores de la primera muestra (primer tumor)</span>
+<span class="fn">print</span>(<span class="st">"  Primera muestra (tumor #1):"</span>)
+<span class="fn">print</span>(<span class="st">f"    Primeras 5 mediciones: {<span class="vr">X</span>[0, :5].round(2)}"</span>)
+<span class="fn">print</span>(<span class="st">f"    Etiqueta real: {data.target_names[<span class="vr">y</span>[0]]}"</span>)
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 2 completado — dataset cargado"</span>)
+    </div>
+  </div>
+
+  <div class="annotation mt16">
+    <span class="ann-icon">🔬</span>
+    <div class="ann-text">Las 30 características incluyen: <strong>radio, textura, perímetro, área, suavidad, compacidad, concavidad, puntos cóncavos, simetría y dimensión fractal</strong> — cada una medida de 3 formas: valor medio, error estándar y peor caso. Eso da 10 × 3 = 30 columnas.</div>
+  </div>
+
+  <div class="annotation warn mt16">
+    <span class="ann-icon">👁</span>
+    <div class="ann-text"><strong>Observa en la Shell:</strong> hay más benignos (357) que malignos (212). Esto se llama <strong>desbalance de clases</strong> y afecta cómo interpretamos la accuracy. Por eso necesitamos Recall y F1.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P3  DIVIDIR DATASET
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p3">
+  <p class="eyebrow">// paso 3 de 8</p>
+  <div class="step-header">
+    <div class="step-badge">PASO 3</div>
+    <div class="step-info">
+      <h2>Dividir en entrenamiento y prueba</h2>
+      <p>El modelo aprende con una parte de los datos. Lo evaluamos con otra parte que nunca ha visto.</p>
+    </div>
+  </div>
+
+  <div class="analogy" style="margin-bottom:24px">
+    <div class="aside">
+      <div class="em">📚</div>
+      <div class="albl">Datos de entrenamiento</div>
+      <div class="aname">El modelo estudia con estos</div>
+      <div class="adesc">80% del dataset. El modelo aprende los patrones de aquí. Nunca los veremos en la evaluación.</div>
+      <div class="card-code" style="margin-top:10px">455 muestras · 80%</div>
+    </div>
+    <div class="arrow">+</div>
+    <div class="aside">
+      <div class="em">📝</div>
+      <div class="albl">Datos de prueba</div>
+      <div class="aname">El examen real</div>
+      <div class="adesc">20% del dataset. El modelo los ve por primera vez durante la evaluación. Así medimos si realmente aprendió.</div>
+      <div class="card-code" style="margin-top:10px">114 muestras · 20%</div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 2</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 3: DIVIDIR EL DATASET ──────────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  train_test_split() mezcla y divide los datos automáticamente</span>
+<span class="cm">#</span>
+<span class="cm">#  PARÁMETRO IMPORTANTE: test_size</span>
+<span class="cm">#  → controla qué porcentaje va a prueba</span>
+<span class="cm">#  → 0.20 = 20% prueba, 80% entrenamiento</span>
+<span class="cm">#  → valores típicos: 0.15, 0.20, 0.25, 0.30</span>
+<span class="cm">#</span>
+<span class="cm">#  PARÁMETRO: random_state</span>
+<span class="cm">#  → "semilla" de aleatoriedad</span>
+<span class="cm">#  → si usas el mismo número, siempre obtienes la misma división</span>
+<span class="cm">#  → útil para que dos personas obtengan los mismos resultados</span>
+
+<span class="hi">X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(
+    X,                  <span class="cm"># datos de entrada (features)</span>
+    y,                  <span class="cm"># etiquetas (maligno/benigno)</span>
+    test_size    = <span class="nm">0.20</span>, <span class="cm"># ← hiperparámetro: % de datos para prueba</span>
+    random_state = <span class="nm">42</span>   <span class="cm"># ← semilla de aleatoriedad (cualquier número)</span>
+)</span>
+
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">"  DIVISIÓN DEL DATASET"</span>)
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">f"  Total de muestras        : {<span class="fn">len</span>(X)}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Entrenamiento (80%)      : {<span class="fn">len</span>(X_train)} muestras"</span>)
+<span class="fn">print</span>(<span class="st">f"  Prueba         (20%)     : {<span class="fn">len</span>(X_test)} muestras"</span>)
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">f"  Malignos en entrenamiento: {sum(y_train==0)}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Benignos en entrenamiento: {sum(y_train==1)}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Malignos en prueba       : {sum(y_test==0)}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Benignos en prueba       : {sum(y_test==1)}"</span>)
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 3 completado — datos divididos"</span>)
+    </div>
+  </div>
+
+  <div class="annotation mt16">
+    <span class="ann-icon">⚙️</span>
+    <div class="ann-text"><strong>test_size y random_state son hiperparámetros.</strong> Tú los decides. Cambia test_size a 0.30 y vuelve a ejecutar — verás que ahora tienes menos datos de entrenamiento y el modelo podría comportarse diferente.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P4  CREAR EL MODELO
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p4">
+  <p class="eyebrow">// paso 4 de 8</p>
+  <div class="step-header">
+    <div class="step-badge s2">PASO 4</div>
+    <div class="step-info">
+      <h2>Crear el modelo con hiperparámetros</h2>
+      <p>Aquí configuras las "perillas" del modelo. Este es el corazón del submódulo.</p>
+    </div>
+  </div>
+
+  <h2 class="h2" style="font-size:16px;margin-bottom:12px">Los hiperparámetros que vas a controlar:</h2>
+
+  <table class="ptable">
+    <thead>
+      <tr>
+        <th>Hiperparámetro</th>
+        <th>¿Qué controla exactamente?</th>
+        <th>Valor base</th>
+        <th>Rango recomendado</th>
+        <th>Bajo → efecto</th>
+        <th>Alto → efecto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pn">n_estimators</span></td>
+        <td>Cuántos árboles forman el "bosque"</td>
+        <td><span class="tag tb">10</span></td>
+        <td>10 – 500</td>
+        <td><span class="tag ty">rápido / impreciso</span></td>
+        <td><span class="tag tg">preciso / lento</span></td>
+      </tr>
+      <tr>
+        <td><span class="pn">max_depth</span></td>
+        <td>Profundidad máxima de cada árbol</td>
+        <td><span class="tag tb">3</span></td>
+        <td>1 – 20 / None</td>
+        <td><span class="tag ty">subajuste</span></td>
+        <td><span class="tag tr">sobreajuste</span></td>
+      </tr>
+      <tr>
+        <td><span class="pn">min_samples_split</span></td>
+        <td>Mínimo de muestras para dividir un nodo</td>
+        <td><span class="tag tb">2</span></td>
+        <td>2 – 20</td>
+        <td><span class="tag tr">árbol complejo</span></td>
+        <td><span class="tag tg">más regularizado</span></td>
+      </tr>
+      <tr>
+        <td><span class="pn">min_samples_leaf</span></td>
+        <td>Mínimo de muestras en una hoja final</td>
+        <td><span class="tag tb">1</span></td>
+        <td>1 – 15</td>
+        <td><span class="tag tr">memoriza datos</span></td>
+        <td><span class="tag tg">generaliza mejor</span></td>
+      </tr>
+      <tr>
+        <td><span class="pn">random_state</span></td>
+        <td>Semilla de aleatoriedad interna</td>
+        <td><span class="tag tb">42</span></td>
+        <td>cualquier int</td>
+        <td colspan="2" style="color:var(--text2)">Solo afecta reproducibilidad, no rendimiento</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 3</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 4: CREAR EL MODELO ─────────────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  RandomForestClassifier = "bosque de árboles de decisión"</span>
+<span class="cm">#  Cada árbol vota y la clase con más votos gana</span>
+<span class="cm">#</span>
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+<span class="cm">#   ✏  ZONA DE CONFIGURACIÓN — modifica estos valores</span>
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+
+<span class="hi">N_ESTIMATORS    = <span class="nm">10</span>    <span class="cm"># número de árboles en el bosque</span></span>
+<span class="hi">MAX_DEPTH       = <span class="nm">3</span>     <span class="cm"># profundidad máxima de cada árbol (None = sin límite)</span></span>
+<span class="hi">MIN_SAMPLES_SPL = <span class="nm">2</span>     <span class="cm"># mín. de muestras para dividir un nodo</span></span>
+<span class="hi">MIN_SAMPLES_LF  = <span class="nm">1</span>     <span class="cm"># mín. de muestras que debe tener una hoja</span></span>
+
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+
+<span class="hi2">modelo = <span class="fn">RandomForestClassifier</span>(
+    n_estimators      = N_ESTIMATORS,
+    max_depth         = MAX_DEPTH,
+    min_samples_split = MIN_SAMPLES_SPL,
+    min_samples_leaf  = MIN_SAMPLES_LF,
+    random_state      = <span class="nm">42</span>            <span class="cm"># reproducibilidad</span>
+)</span>
+
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">"  MODELO CREADO — Random Forest Classifier"</span>)
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">f"  n_estimators       : {N_ESTIMATORS}  (árboles)"</span>)
+<span class="fn">print</span>(<span class="st">f"  max_depth          : {MAX_DEPTH}"</span>)
+<span class="fn">print</span>(<span class="st">f"  min_samples_split  : {MIN_SAMPLES_SPL}"</span>)
+<span class="fn">print</span>(<span class="st">f"  min_samples_leaf   : {MIN_SAMPLES_LF}"</span>)
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">"  ⚙  El modelo está CREADO pero aún NO entrenado."</span>)
+<span class="fn">print</span>(<span class="st">"     El entrenamiento ocurre en el Paso 5."</span>)
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 4 completado — modelo configurado"</span>)
+    </div>
+  </div>
+
+  <div class="annotation info2 mt16">
+    <span class="ann-icon">🎯</span>
+    <div class="ann-text"><strong>Nota clave:</strong> Los valores de N_ESTIMATORS, MAX_DEPTH, etc. están en variables al inicio. Esto es a propósito: en el Paso 8 vas a cambiar esas variables y comparar resultados sin tocar el resto del código.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P5  ENTRENAR
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p5">
+  <p class="eyebrow">// paso 5 de 8</p>
+  <div class="step-header">
+    <div class="step-badge s3">PASO 5</div>
+    <div class="step-info">
+      <h2>Entrenar el modelo</h2>
+      <p>Una sola línea de código. Pero detrás hay cientos de árboles de decisión construyéndose simultáneamente.</p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="aside">
+      <div class="em">🏥</div>
+      <div class="albl">Antes del entrenamiento</div>
+      <div class="aname">El modelo no sabe nada</div>
+      <div class="adesc">RandomForestClassifier existe pero sus árboles están vacíos. No puede predecir nada.</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="aside">
+      <div class="em">🧬</div>
+      <div class="albl">Después de .fit()</div>
+      <div class="aname">El modelo aprendió patrones</div>
+      <div class="adesc">Procesó 455 biopsias, construyó los árboles y ajustó sus parámetros internos. Ahora puede predecir.</div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 4</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 5: ENTRENAR EL MODELO ──────────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  .fit(X_train, y_train) = el modelo estudia los datos de entrenamiento</span>
+<span class="cm">#</span>
+<span class="cm">#  Lo que ocurre internamente:</span>
+<span class="cm">#  1. Construye N_ESTIMATORS árboles de decisión</span>
+<span class="cm">#  2. Cada árbol usa una muestra aleatoria de los datos (bagging)</span>
+<span class="cm">#  3. En cada nodo, elige la mejor característica para dividir</span>
+<span class="cm">#  4. Los árboles quedan guardados en memoria como PARÁMETROS del modelo</span>
+
+<span class="fn">print</span>(<span class="st">"  Entrenando el modelo... "</span>, end=<span class="st">""</span>, flush=<span class="kw">True</span>)
+
+<span class="hi">modelo.<span class="fn">fit</span>(X_train, y_train)   <span class="cm"># ← TODO el entrenamiento en una línea</span></span>
+
+<span class="fn">print</span>(<span class="st">"listo ✓"</span>)
+<span class="fn">print</span>()
+
+<span class="cm"># Curiosidad: ¿cuántos árboles se crearon realmente?</span>
+n_arboles_reales = <span class="fn">len</span>(modelo.estimators_)
+<span class="fn">print</span>(<span class="st">f"  Árboles creados         : {n_arboles_reales}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Clases aprendidas       : {list(modelo.classes_)} → 0=maligno, 1=benigno"</span>)
+<span class="fn">print</span>(<span class="st">f"  Características usadas  : {modelo.n_features_in_}"</span>)
+
+<span class="cm"># El árbol #0 (el primero) — ver su profundidad real</span>
+<span class="fn">print</span>(<span class="st">f"  Profundidad árbol #1    : {modelo.estimators_[0].get_depth()}"</span>)
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 5 completado — modelo entrenado"</span>)
+<span class="fn">print</span>(<span class="st">"   Ahora el modelo conoce los patrones de 455 biopsias."</span>)
+    </div>
+  </div>
+
+  <div class="cards g3 mt16">
+    <div class="card ca" style="padding:14px">
+      <div class="card-tag">.fit()</div>
+      <div class="card-body">El método que entrena. Recibe X (features) e y (etiquetas). Modifica el modelo internamente.</div>
+    </div>
+    <div class="card cb" style="padding:14px">
+      <div class="card-tag">Parámetros aprendidos</div>
+      <div class="card-body">Después del .fit(), el modelo guarda los árboles en <strong style="color:var(--white)">modelo.estimators_</strong>. Los puedes inspeccionar.</div>
+    </div>
+    <div class="card cc" style="padding:14px">
+      <div class="card-tag">Tiempo de entrenamiento</div>
+      <div class="card-body">Con 10 árboles es instantáneo. Con 500 puede tardar 1-2 segundos. El número después del punto es un parámetro.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P6  PREDECIR Y MEDIR
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p6">
+  <p class="eyebrow">// paso 6 de 8</p>
+  <div class="step-header">
+    <div class="step-badge s4">PASO 6</div>
+    <div class="step-info">
+      <h2>Predecir y calcular las métricas</h2>
+      <p>El modelo ahora ve 114 tumores que nunca estudió. ¿Cuántos acierta?</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 5</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 6: PREDECIR Y CALCULAR MÉTRICAS ────────────────────────────</span>
+
+<span class="cm"># .predict() usa los árboles entrenados para predecir las 114 muestras</span>
+<span class="hi">y_pred = modelo.<span class="fn">predict</span>(X_test)   <span class="cm"># array con 114 predicciones: 0 ó 1</span></span>
+
+<span class="cm"># ── CALCULAR LAS 4 MÉTRICAS ─────────────────────────────────────────</span>
+<span class="hi2">accuracy  = <span class="fn">accuracy_score</span> (y_test, y_pred)
+precision = <span class="fn">precision_score</span>(y_test, y_pred)
+recall    = <span class="fn">recall_score</span>   (y_test, y_pred)
+f1        = <span class="fn">f1_score</span>       (y_test, y_pred)</span>
+
+<span class="cm"># ── MOSTRAR RESULTADOS ──────────────────────────────────────────────</span>
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">f"  RESULTADOS — n_est={N_ESTIMATORS}, depth={MAX_DEPTH}"</span>)
+<span class="fn">print</span>(<span class="st">"="</span> * <span class="nm">60</span>)
+<span class="fn">print</span>(<span class="st">f"  Accuracy  : {accuracy:.4f}   ({accuracy*100:.2f}%)"</span>)
+<span class="fn">print</span>(<span class="st">f"  Precision : {precision:.4f}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Recall    : {recall:.4f}   ← prioritario (tumores malignos)"</span>)
+<span class="fn">print</span>(<span class="st">f"  F1-Score  : {f1:.4f}"</span>)
+<span class="fn">print</span>()
+
+<span class="cm"># Reporte completo por clase</span>
+<span class="fn">print</span>(<span class="st">"  Reporte detallado:"</span>)
+<span class="fn">print</span>(<span class="fn">classification_report</span>(y_test, y_pred, target_names=data.target_names))
+
+<span class="cm"># ── CALCULAR LA MATRIZ Y VER LOS FALSOS NEGATIVOS ───────────────────</span>
+<span class="hi3">cm_vals = <span class="fn">confusion_matrix</span>(y_test, y_pred)
+TN, FP, FN, TP = cm_vals.<span class="fn">ravel</span>()  <span class="cm"># desempaquetar los 4 valores</span></span>
+
+<span class="fn">print</span>(<span class="st">"  Desglose de predicciones:"</span>)
+<span class="fn">print</span>(<span class="st">f"    TP = {TP:>3}  → benignos  correctamente detectados"</span>)
+<span class="fn">print</span>(<span class="st">f"    TN = {TN:>3}  → malignos  correctamente detectados"</span>)
+<span class="fn">print</span>(<span class="st">f"    FP = {FP:>3}  → malignos  clasificados como benignos (riesgo)"</span>)
+<span class="fn">print</span>(<span class="st">f"    FN = {FN:>3}  → benignos  clasificados como malignos (molestia)"</span>)
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">f"  ⚠  {FP} tumores malignos NO detectados (FP clase maligno)"</span>)
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 6 completado — métricas calculadas"</span>)
+    </div>
+  </div>
+
+  <div class="annotation mt16">
+    <span class="ann-icon">📊</span>
+    <div class="ann-text"><strong>¿Qué significan los números?</strong> Si ves Recall = 0.9437, significa que el modelo detectó el 94.37% de los tumores malignos. El 5.63% restante son Falsos Negativos — pacientes que el modelo dejó ir sin diagnóstico.</div>
+  </div>
+
+  <div class="annotation warn mt16">
+    <span class="ann-icon">🧮</span>
+    <div class="ann-text"><strong>Verifica manualmente:</strong> toma los valores de TP, TN, FP, FN que imprimió el programa y calcula Accuracy = (TP+TN)/(TP+TN+FP+FN) con tu calculadora. ¿Coincide con lo que imprimió Python?</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P7  MATRIZ VISUAL
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p7">
+  <p class="eyebrow">// paso 7 de 8</p>
+  <div class="step-header">
+    <div class="step-badge s5">PASO 7</div>
+    <div class="step-info">
+      <h2>Visualizar la Matriz de Confusión</h2>
+      <p>Una imagen vale más que cien números. Se abrirá una ventana gráfica desde IDLE.</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 6</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 7: VISUALIZAR LA MATRIZ DE CONFUSIÓN ───────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  Creamos la gráfica con matplotlib puro (sin seaborn)</span>
+<span class="cm">#  para máxima compatibilidad con IDLE</span>
+
+<span class="hi">fig, axes = plt.<span class="fn">subplots</span>(<span class="nm">1</span>, <span class="nm">2</span>, figsize=(<span class="nm">13</span>, <span class="nm">5</span>))
+fig.<span class="fn">suptitle</span>(
+    <span class="st">f"Matriz de Confusión — n_est={N_ESTIMATORS}, depth={MAX_DEPTH}"</span>,
+    fontsize=<span class="nm">13</span>, fontweight=<span class="st">"bold"</span>
+)</span>
+
+<span class="cm"># ── Panel izquierdo: valores absolutos ──────────────────────────────</span>
+valores = np.<span class="fn">array</span>([[TN, FP], [FN, TP]], dtype=float)
+etiquetas_rc = [<span class="st">"Maligno (real)"</span>, <span class="st">"Benigno (real)"</span>]
+etiquetas_cc = [<span class="st">"Pred: Maligno"</span>, <span class="st">"Pred: Benigno"</span>]
+nombres_celdas = [[<span class="st">"TN"</span>, <span class="st">"FP"</span>], [<span class="st">"FN ⚠"</span>, <span class="st">"TP"</span>]]
+
+<span class="vr">ax1</span> = axes[<span class="nm">0</span>]
+<span class="vr">img1</span> = ax1.<span class="fn">imshow</span>(valores, cmap=<span class="st">"Blues"</span>)
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2</span>):
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2</span>):
+        val   = <span class="fn">int</span>(valores[i, j])
+        color = <span class="st">"white"</span> <span class="kw">if</span> valores[i,j] > valores.<span class="fn">max</span>() * <span class="nm">0.5</span> <span class="kw">else</span> <span class="st">"black"</span>
+        ax1.<span class="fn">text</span>(j, i, <span class="st">f"{nombres_celdas[i][j]}\n{val}"</span>,
+                 ha=<span class="st">"center"</span>, va=<span class="st">"center"</span>,
+                 fontsize=<span class="nm">14</span>, fontweight=<span class="st">"bold"</span>, color=color)
+
+ax1.<span class="fn">set_xticks</span>([<span class="nm">0</span>,<span class="nm">1</span>]); ax1.<span class="fn">set_yticks</span>([<span class="nm">0</span>,<span class="nm">1</span>])
+ax1.<span class="fn">set_xticklabels</span>(etiquetas_cc, fontsize=<span class="nm">10</span>)
+ax1.<span class="fn">set_yticklabels</span>(etiquetas_rc, fontsize=<span class="nm">10</span>)
+ax1.<span class="fn">set_xlabel</span>(<span class="st">"Predicción del modelo"</span>, fontsize=<span class="nm">11</span>)
+ax1.<span class="fn">set_ylabel</span>(<span class="st">"Valor real"</span>, fontsize=<span class="nm">11</span>)
+ax1.<span class="fn">set_title</span>(<span class="st">"Valores absolutos"</span>, fontsize=<span class="nm">11</span>)
+plt.<span class="fn">colorbar</span>(img1, ax=ax1)
+
+<span class="cm"># ── Panel derecho: barras de métricas ───────────────────────────────</span>
+<span class="vr">ax2</span> = axes[<span class="nm">1</span>]
+metr_nombres = [<span class="st">"Accuracy"</span>, <span class="st">"Precision"</span>, <span class="st">"Recall"</span>, <span class="st">"F1-Score"</span>]
+metr_valores = [accuracy, precision, recall, f1]
+colores_barras = [<span class="st">"#378ADD"</span>, <span class="st">"#f97316"</span>, <span class="st">"#ef4444"</span>, <span class="st">"#7c3aed"</span>]
+
+barras = ax2.<span class="fn">bar</span>(metr_nombres, metr_valores,
+                 color=colores_barras, alpha=<span class="nm">0.85</span>, edgecolor=<span class="st">"white"</span>)
+<span class="kw">for</span> barra, val <span class="kw">in</span> <span class="fn">zip</span>(barras, metr_valores):
+    ax2.<span class="fn">text</span>(barra.<span class="fn">get_x</span>() + barra.<span class="fn">get_width</span>()/<span class="nm">2</span>,
+             barra.<span class="fn">get_height</span>() + <span class="nm">0.005</span>,
+             <span class="st">f"{val:.3f}"</span>, ha=<span class="st">"center"</span>, va=<span class="st">"bottom"</span>,
+             fontsize=<span class="nm">11</span>, fontweight=<span class="st">"bold"</span>)
+
+ax2.<span class="fn">set_ylim</span>(<span class="nm">0.0</span>, <span class="nm">1.08</span>)
+ax2.<span class="fn">set_title</span>(<span class="st">"Métricas de rendimiento"</span>, fontsize=<span class="nm">11</span>)
+ax2.<span class="fn">set_ylabel</span>(<span class="st">"Valor"</span>, fontsize=<span class="nm">11</span>)
+ax2.<span class="fn">axhline</span>(<span class="nm">0.9</span>, color=<span class="st">"gray"</span>, linestyle=<span class="st">"--"</span>, linewidth=<span class="nm">1</span>, label=<span class="st">"umbral 90%"</span>)
+ax2.<span class="fn">legend</span>(fontsize=<span class="nm">9</span>)
+ax2.<span class="fn">grid</span>(axis=<span class="st">"y"</span>, alpha=<span class="nm">0.3</span>)
+
+plt.<span class="fn">tight_layout</span>()
+
+<span class="cm"># Guardar la imagen como archivo PNG</span>
+nombre_img = <span class="st">f"resultado_n{N_ESTIMATORS}_d{MAX_DEPTH}.png"</span>
+plt.<span class="fn">savefig</span>(nombre_img, dpi=<span class="nm">120</span>, bbox_inches=<span class="st">"tight"</span>)
+<span class="fn">print</span>(<span class="st">f"\n  Imagen guardada → {nombre_img}"</span>)
+
+plt.<span class="fn">show</span>()   <span class="cm"># ← abre la ventana gráfica en IDLE</span>
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 7 completado — gráfica generada"</span>)
+    </div>
+  </div>
+
+  <div class="annotation ok mt16">
+    <span class="ann-icon">🖼</span>
+    <div class="ann-text"><strong>La imagen se guarda automáticamente</strong> con el nombre <em>resultado_n10_d3.png</em> (varía según tus parámetros) en la misma carpeta donde guardaste el archivo .py. La necesitas para el entregable.</div>
+  </div>
+
+  <div class="annotation warn mt16">
+    <span class="ann-icon">⚠️</span>
+    <div class="ann-text">Si la ventana de gráfica no aparece, verifica que la línea <strong style="color:var(--accent2)">matplotlib.use("TkAgg")</strong> esté al inicio del archivo, antes de <em>import matplotlib.pyplot as plt</em>. Si la ventana se congela, ciérrala con la X y el programa continuará.</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     P8  COMPARAR CONFIGURACIONES
+───────────────────────────────────────────── -->
+<section class="sec" id="s-p8">
+  <p class="eyebrow">// paso 8 de 8</p>
+  <div class="step-header">
+    <div class="step-badge s6">PASO 8</div>
+    <div class="step-info">
+      <h2>Comparar 5 configuraciones de hiperparámetros</h2>
+      <p>Este es el núcleo del submódulo. Cambiamos los parámetros y medimos el efecto.</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-topbar">
+      <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+      <div class="code-filename">mi_modelo.py — agrega después del Paso 7</div>
+    </div>
+    <div class="code-body">
+<span class="cm"># ── PASO 8: COMPARAR CONFIGURACIONES ────────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm">#  Entrenamos el modelo 5 veces con distintos hiperparámetros</span>
+<span class="cm">#  y comparamos los resultados en una tabla</span>
+
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+<span class="cm">#   ✏  CONFIGURA TUS 5 COMBINACIONES AQUÍ</span>
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+<span class="hi">configuraciones = [
+    {<span class="st">"nombre"</span>: <span class="st">"Config A — base     "</span>, <span class="st">"n_estimators"</span>: <span class="nm">10</span>,  <span class="st">"max_depth"</span>: <span class="nm">3</span>,    <span class="st">"min_samples_leaf"</span>: <span class="nm">1</span>},
+    {<span class="st">"nombre"</span>: <span class="st">"Config B — +árboles "</span>, <span class="st">"n_estimators"</span>: <span class="nm">50</span>,  <span class="st">"max_depth"</span>: <span class="nm">3</span>,    <span class="st">"min_samples_leaf"</span>: <span class="nm">1</span>},
+    {<span class="st">"nombre"</span>: <span class="st">"Config C — +profund."</span>, <span class="st">"n_estimators"</span>: <span class="nm">50</span>,  <span class="st">"max_depth"</span>: <span class="nm">10</span>,   <span class="st">"min_samples_leaf"</span>: <span class="nm">1</span>},
+    {<span class="st">"nombre"</span>: <span class="st">"Config D — +regular."</span>, <span class="st">"n_estimators"</span>: <span class="nm">100</span>, <span class="st">"max_depth"</span>: <span class="nm">10</span>,   <span class="st">"min_samples_leaf"</span>: <span class="nm">3</span>},
+    {<span class="st">"nombre"</span>: <span class="st">"Config E — sin límit"</span>, <span class="st">"n_estimators"</span>: <span class="nm">100</span>, <span class="st">"max_depth"</span>: <span class="kw">None</span>, <span class="st">"min_samples_leaf"</span>: <span class="nm">1</span>},
+]</span>
+<span class="cm"># ════════════════════════════════════════════════════════════</span>
+
+<span class="vr">tabla</span> = []
+
+<span class="fn">print</span>(<span class="st">"  Entrenando 5 configuraciones"</span>, end=<span class="st">""</span>, flush=<span class="kw">True</span>)
+
+<span class="kw">for</span> cfg <span class="kw">in</span> configuraciones:
+    <span class="vr">m</span> = <span class="fn">RandomForestClassifier</span>(
+        n_estimators      = cfg[<span class="st">"n_estimators"</span>],
+        max_depth         = cfg[<span class="st">"max_depth"</span>],
+        min_samples_leaf  = cfg[<span class="st">"min_samples_leaf"</span>],
+        random_state      = <span class="nm">42</span>
+    )
+    <span class="vr">m</span>.<span class="fn">fit</span>(X_train, y_train)
+    <span class="vr">yp</span> = <span class="vr">m</span>.<span class="fn">predict</span>(X_test)
+    <span class="vr">c</span>  = <span class="fn">confusion_matrix</span>(y_test, yp)
+    tn2, fp2, fn2, tp2 = <span class="vr">c</span>.<span class="fn">ravel</span>()
+
+    tabla.<span class="fn">append</span>({
+        <span class="st">"nombre"</span>   : cfg[<span class="st">"nombre"</span>],
+        <span class="st">"n_est"</span>    : cfg[<span class="st">"n_estimators"</span>],
+        <span class="st">"depth"</span>    : <span class="fn">str</span>(cfg[<span class="st">"max_depth"</span>]),
+        <span class="st">"leaf"</span>     : cfg[<span class="st">"min_samples_leaf"</span>],
+        <span class="st">"TP"</span>       : <span class="fn">int</span>(tp2),
+        <span class="st">"FP"</span>       : <span class="fn">int</span>(fp2),
+        <span class="st">"FN"</span>       : <span class="fn">int</span>(fn2),
+        <span class="st">"Accuracy"</span> : <span class="fn">round</span>(<span class="fn">accuracy_score</span> (y_test,yp), <span class="nm">4</span>),
+        <span class="st">"Precision"</span>: <span class="fn">round</span>(<span class="fn">precision_score</span>(y_test,yp), <span class="nm">4</span>),
+        <span class="st">"Recall"</span>   : <span class="fn">round</span>(<span class="fn">recall_score</span>   (y_test,yp), <span class="nm">4</span>),
+        <span class="st">"F1"</span>       : <span class="fn">round</span>(<span class="fn">f1_score</span>       (y_test,yp), <span class="nm">4</span>),
+    })
+    <span class="fn">print</span>(<span class="st">"."</span>, end=<span class="st">""</span>, flush=<span class="kw">True</span>)
+
+<span class="fn">print</span>(<span class="st">"  listo ✓\n"</span>)
+
+<span class="cm"># ── IMPRIMIR TABLA ──────────────────────────────────────────────────</span>
+SEP = <span class="st">"="</span> * <span class="nm">105</span>
+<span class="fn">print</span>(SEP)
+<span class="fn">print</span>(<span class="st">"  TABLA COMPARATIVA DE HIPERPARÁMETROS"</span>)
+<span class="fn">print</span>(SEP)
+<span class="fn">print</span>(<span class="st">f"  {'Configuración':<22} {'n_est':>6} {'depth':>7} {'leaf':>5}"</span>
+      <span class="st">f"   {'TP':>4} {'FP':>4} {'FN':>4}"</span>
+      <span class="st">f"   {'Accuracy':>9} {'Precision':>10} {'Recall':>8} {'F1':>8}"</span>)
+<span class="fn">print</span>(<span class="st">"-"</span> * <span class="nm">105</span>)
+
+mejor_f1 = <span class="fn">max</span>(r[<span class="st">"F1"</span>] <span class="kw">for</span> r <span class="kw">in</span> tabla)
+menor_fn = <span class="fn">min</span>(r[<span class="st">"FN"</span>] <span class="kw">for</span> r <span class="kw">in</span> tabla)
+
+<span class="kw">for</span> r <span class="kw">in</span> tabla:
+    marca = <span class="st">" ← mejor F1"</span>  <span class="kw">if</span> r[<span class="st">"F1"</span>] == mejor_f1 <span class="kw">else</span> (
+            <span class="st">" ← menos FN"</span> <span class="kw">if</span> r[<span class="st">"FN"</span>] == menor_fn  <span class="kw">else</span> <span class="st">""</span>)
+    <span class="fn">print</span>(<span class="st">f"  {r['nombre']:<22} {r['n_est']:>6} {r['depth']:>7} {r['leaf']:>5}"</span>
+          <span class="st">f"   {r['TP']:>4} {r['FP']:>4} {r['FN']:>4}"</span>
+          <span class="st">f"   {r['Accuracy']:>9.4f} {r['Precision']:>10.4f}"</span>
+          <span class="st">f" {r['Recall']:>8.4f} {r['F1']:>8.4f}{marca}"</span>)
+
+<span class="fn">print</span>(SEP)
+
+<span class="cm"># ── GRÁFICA COMPARATIVA ─────────────────────────────────────────────</span>
+<span class="hi2">fig2, (ax3, ax4) = plt.<span class="fn">subplots</span>(<span class="nm">1</span>, <span class="nm">2</span>, figsize=(<span class="nm">14</span>, <span class="nm">5</span>))
+fig2.<span class="fn">suptitle</span>(<span class="st">"Comparación de 5 configuraciones de hiperparámetros"</span>,
+               fontsize=<span class="nm">13</span>, fontweight=<span class="st">"bold"</span>)</span>
+
+nombres_conf = [r[<span class="st">"nombre"</span>].<span class="fn">strip</span>() <span class="kw">for</span> r <span class="kw">in</span> tabla]
+metricas_comp = [<span class="st">"Accuracy"</span>, <span class="st">"Precision"</span>, <span class="st">"Recall"</span>, <span class="st">"F1"</span>]
+col_comp      = [<span class="st">"#378ADD"</span>, <span class="st">"#f97316"</span>, <span class="st">"#ef4444"</span>, <span class="st">"#7c3aed"</span>]
+xpos          = np.<span class="fn">arange</span>(<span class="fn">len</span>(tabla))
+ancho         = <span class="nm">0.18</span>
+
+<span class="kw">for</span> i, (met, col) <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="fn">zip</span>(metricas_comp, col_comp)):
+    vals = [r[met] <span class="kw">for</span> r <span class="kw">in</span> tabla]
+    ax3.<span class="fn">bar</span>(xpos + i*ancho, vals, ancho,
+            label=met, color=col, alpha=<span class="nm">0.85</span>, edgecolor=<span class="st">"white"</span>)
+
+ax3.<span class="fn">set_xticks</span>(xpos + <span class="nm">1.5</span>*ancho)
+ax3.<span class="fn">set_xticklabels</span>(nombres_conf, rotation=<span class="nm">20</span>, ha=<span class="st">"right"</span>, fontsize=<span class="nm">9</span>)
+ax3.<span class="fn">set_ylim</span>(<span class="nm">0.80</span>, <span class="nm">1.03</span>)
+ax3.<span class="fn">set_title</span>(<span class="st">"Métricas por configuración"</span>); ax3.<span class="fn">legend</span>(fontsize=<span class="nm">9</span>)
+ax3.<span class="fn">grid</span>(axis=<span class="st">"y"</span>, alpha=<span class="nm">0.3</span>)
+
+fns_comp = [r[<span class="st">"FN"</span>] <span class="kw">for</span> r <span class="kw">in</span> tabla]
+col_fn   = [<span class="st">"#22c55e"</span> <span class="kw">if</span> v == <span class="fn">min</span>(fns_comp) <span class="kw">else</span>
+            <span class="st">"#ef4444"</span> <span class="kw">if</span> v == <span class="fn">max</span>(fns_comp) <span class="kw">else</span>
+            <span class="st">"#f97316"</span> <span class="kw">for</span> v <span class="kw">in</span> fns_comp]
+bars_fn = ax4.<span class="fn">bar</span>(nombres_conf, fns_comp, color=col_fn,
+                   alpha=<span class="nm">0.88</span>, edgecolor=<span class="st">"white"</span>)
+<span class="kw">for</span> b, v <span class="kw">in</span> <span class="fn">zip</span>(bars_fn, fns_comp):
+    ax4.<span class="fn">text</span>(b.<span class="fn">get_x</span>()+b.<span class="fn">get_width</span>()/<span class="nm">2</span>, b.<span class="fn">get_height</span>()+<span class="nm">0.1</span>,
+             <span class="fn">str</span>(v), ha=<span class="st">"center"</span>, fontsize=<span class="nm">12</span>, fontweight=<span class="st">"bold"</span>)
+ax4.<span class="fn">set_xticklabels</span>(nombres_conf, rotation=<span class="nm">20</span>, ha=<span class="st">"right"</span>, fontsize=<span class="nm">9</span>)
+ax4.<span class="fn">set_title</span>(<span class="st">"Falsos Negativos por configuración"</span>)
+ax4.<span class="fn">set_ylabel</span>(<span class="st">"Cantidad de FN"</span>)
+ax4.<span class="fn">grid</span>(axis=<span class="st">"y"</span>, alpha=<span class="nm">0.3</span>)
+
+plt.<span class="fn">tight_layout</span>()
+plt.<span class="fn">savefig</span>(<span class="st">"comparacion_5configs.png"</span>, dpi=<span class="nm">120</span>, bbox_inches=<span class="st">"tight"</span>)
+<span class="fn">print</span>(<span class="st">"  Gráfica guardada → comparacion_5configs.png"</span>)
+plt.<span class="fn">show</span>()
+
+<span class="fn">print</span>(<span class="st">"\n✅ Paso 8 completado — comparación lista"</span>)
+<span class="fn">print</span>(<span class="st">f"  Mejor F1-Score: {mejor_f1}"</span>)
+<span class="fn">print</span>(<span class="st">f"  Config con menos FN: ver tabla arriba"</span>)
+
+<span class="cm"># Línea final para que IDLE no cierre la ventana antes de que veas los resultados</span>
+<span class="fn">print</span>(<span class="st">"\n  Programa completado. Presiona Enter para salir."</span>)
+<span class="fn">input</span>()
+    </div>
+  </div>
+
+  <div class="annotation mt16">
+    <span class="ann-icon">📌</span>
+    <div class="ann-text"><strong>Cómo interpretar la tabla:</strong> busca la fila marcada con <em>← mejor F1</em>. Esa es tu configuración óptima según el F1-Score. Busca también <em>← menos FN</em> — esa minimiza los tumores malignos no detectados. ¿Son la misma configuración?</div>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     RETO
+───────────────────────────────────────────── -->
+<section class="sec" id="s-reto">
+  <p class="eyebrow">// ★ tu reto personal</p>
+  <h2 class="h2">Ahora es tu turno</h2>
+  <p class="lead">Ya tienes el código completo funcionando. Estos son los retos para que lo hagas tuyo.</p>
+
+  <div class="challenge">
+    <h3>Reto 1 — Mejora el Recall</h3>
+    <p>El Recall es la métrica más importante en detección de cáncer. Tu misión: encontrar una configuración donde <strong>Recall &gt; 0.97</strong> sin que F1-Score baje de 0.93.</p>
+    <ul>
+      <li>Cambia los valores de las variables al inicio del archivo</li>
+      <li>Prueba aumentar n_estimators y ajustar max_depth</li>
+      <li>Anota qué combinación funcionó mejor en tu guía impresa</li>
+    </ul>
+  </div>
+
+  <div class="challenge" style="background:rgba(251,146,60,.06);border-color:rgba(251,146,60,.22)">
+    <h3 style="color:var(--accent2)">Reto 2 — Detecta el sobreajuste</h3>
+    <p>El sobreajuste ocurre cuando el modelo "memorizó" los datos de entrenamiento pero no generaliza. Para detectarlo:</p>
+    <ul>
+      <li>Agrega al código: <span style="font-family:var(--mono);font-size:12px;color:var(--accent)">train_pred = modelo.predict(X_train)</span></li>
+      <li>Calcula F1 en entrenamiento: <span style="font-family:var(--mono);font-size:12px;color:var(--accent)">f1_train = f1_score(y_train, train_pred)</span></li>
+      <li>Compara f1_train vs f1 (prueba). Si la diferencia es &gt; 0.05, hay sobreajuste</li>
+      <li>Prueba con max_depth=None y min_samples_leaf=1 para provocarlo intencionalmente</li>
+    </ul>
+  </div>
+
+  <div class="challenge" style="background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.2)">
+    <h3 style="color:var(--green)">Reto 3 — Tu configuración ganadora</h3>
+    <p>Agrega una 6ta configuración en la lista del Paso 8 con tus propios valores. Escribe tu hipótesis antes de ejecutar:</p>
+    <ul>
+      <li>¿Qué valores elegiste y por qué?</li>
+      <li>¿Mejoró el F1-Score respecto a la Config E?</li>
+      <li>¿Hubo sobreajuste?</li>
+      <li>Guarda las gráficas generadas para el entregable</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────────────────
+     ENTREGABLE FINAL
+───────────────────────────────────────────── -->
+<section class="sec" id="s-final">
+  <p class="eyebrow">// fin · entregable</p>
+  <h2 class="h2">¿Qué debes entregar?</h2>
+  <p class="lead">Una carpeta con tu nombre y grupo que contenga todo lo que construiste hoy.</p>
+
+  <div class="cards g2">
+    <div class="card ca">
+      <div class="card-tag">📄 Archivo obligatorio</div>
+      <div class="card-title">mi_modelo.py funcionando</div>
+      <div class="card-body">El archivo completo con los 8 pasos + tus 5 configuraciones + tu reto personal. Debe ejecutarse con F5 sin errores.</div>
+    </div>
+    <div class="card cb">
+      <div class="card-tag">🖼 Imágenes obligatorias</div>
+      <div class="card-title">Las 2 gráficas generadas</div>
+      <div class="card-body"><strong style="color:var(--white)">resultado_n__d__.png</strong> — tu matriz de confusión<br><strong style="color:var(--white)">comparacion_5configs.png</strong> — la tabla visual</div>
+    </div>
+    <div class="card cc">
+      <div class="card-tag">📝 Preguntas de reflexión</div>
+      <div class="card-title">Responder en tu cuaderno o guía</div>
+      <div class="card-body">
+        1. ¿Qué configuración tuvo mejor F1? ¿Por qué?<br>
+        2. ¿Hubo sobreajuste en alguna config? ¿Cómo lo detectaste?<br>
+        3. ¿Qué parámetro tuvo más impacto: n_estimators o max_depth?<br>
+        4. ¿Cuántos FN tuvo tu mejor modelo? ¿Es aceptable para un hospital?
+      </div>
+    </div>
+    <div class="card cd">
+      <div class="card-tag">🏆 Reto personal</div>
+      <div class="card-title">Tu configuración del Reto 3</div>
+      <div class="card-body">Los valores que elegiste, tu hipótesis escrita, el F1 obtenido y la comparación vs Config E (la mejor de las 5).</div>
+    </div>
+  </div>
+
+  <div class="hline"></div>
+
+  <h2 class="h2" style="margin-bottom:16px">Rúbrica rápida (20 puntos)</h2>
+  <table class="ptable">
+    <thead>
+      <tr>
+        <th>Criterio</th>
+        <th>Excelente (5)</th>
+        <th>Bien (3-4)</th>
+        <th>Regular (1-2)</th>
+        <th>Pts</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Código funcional</strong><br><span style="font-size:11px;color:var(--text2)">8 pasos completos</span></td>
+        <td>Ejecuta sin errores, comentarios propios</td>
+        <td>Ejecuta con pequeños ajustes</td>
+        <td>Errores o incompleto</td>
+        <td style="font-family:var(--mono);color:var(--accent);text-align:center"><strong>/5</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Tabla comparativa</strong><br><span style="font-size:11px;color:var(--text2)">5 configuraciones</span></td>
+        <td>5 configs + gráfica + análisis escrito</td>
+        <td>5 configs + gráfica</td>
+        <td>Menos de 5 configs</td>
+        <td style="font-family:var(--mono);color:var(--accent);text-align:center"><strong>/5</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Reflexión escrita</strong><br><span style="font-size:11px;color:var(--text2)">4 preguntas</span></td>
+        <td>Todas con argumento técnico y numérico</td>
+        <td>3 respondidas con argumento</td>
+        <td>1-2 o sin argumentos</td>
+        <td style="font-family:var(--mono);color:var(--accent);text-align:center"><strong>/5</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Reto personal</strong><br><span style="font-size:11px;color:var(--text2)">Config propia</span></td>
+        <td>Hipótesis + F1 mejor que Config E + CV</td>
+        <td>Código funcionando con config propia</td>
+        <td>Intento parcial</td>
+        <td style="font-family:var(--mono);color:var(--accent);text-align:center"><strong>/5</strong></td>
+      </tr>
+      <tr style="background:rgba(56,189,248,.04)">
+        <td colspan="4" style="text-align:right;padding-right:16px;font-weight:500">TOTAL</td>
+        <td style="font-family:var(--mono);color:var(--accent);text-align:center;font-size:16px"><strong>/20</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="annotation ok" style="margin-top:24px">
+    <span class="ann-icon">🎉</span>
+    <div class="ann-text">Completaste la actividad. Construiste un clasificador de IA real, lo entrenaste con datos médicos auténticos, mediste su rendimiento con 4 métricas profesionales y exploraste cómo los hiperparámetros cambian los resultados. Eso es lo que hacen los científicos de datos reales.</div>
+  </div>
+
+  <div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted)">
+    <span>Módulo III · Submódulo 2 · Técnico en Inteligencia Artificial · SEP 2024</span>
+    <span>Imprime esta guía: Ctrl+P en tu navegador</span>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ── PROGRESS BAR ──────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const p = document.getElementById('prog');
+  const t = window.scrollY;
+  const h = document.body.scrollHeight - window.innerHeight;
+  p.style.width = (t / h * 100) + '%';
+});
+
+/* ── ACTIVE NAV ────────────────────────────────────── */
+const sections = document.querySelectorAll('.sec');
+const navItems = document.querySelectorAll('.nav-item');
+
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navItems.forEach(n => {
+        n.classList.toggle('active', n.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
